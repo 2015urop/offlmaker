@@ -1,0 +1,13 @@
+<div class="fcComp" data-type="species" data-id="species0" data-top="143" data-left="0.05997983870967742" data-value="S" data-rev="undefined"></div>
+<div class="fcComp" data-type="interaction" data-id="interaction0" data-top="245" data-left="0.2212701612903226" data-value="0.05" data-rev="undefined"></div>
+<div class="fcComp" data-type="species" data-id="species1" data-top="210" data-left="0.37247983870967744" data-value="I" data-rev="undefined"></div>
+<div class="fcComp" data-type="interaction" data-id="interaction1" data-top="277" data-left="0.5619959677419355" data-value="0.03" data-rev="undefined"></div>
+<div class="fcComp" data-type="species" data-id="species2" data-top="141" data-left="0.7505040322580645" data-value="R" data-rev="undefined"></div>
+<div class="fcComp" data-type="interaction" data-id="interaction2" data-top="37" data-left="0.4248991935483871" data-value="0.02" data-rev="yes"></div>
+<div class="fcConn" data-from="species0" data-to="interaction0"></div>
+<div class="fcConn" data-from="interaction0" data-to="species1"></div>
+<div class="fcConn" data-from="species1" data-to="interaction1"></div>
+<div class="fcConn" data-from="interaction1" data-to="species2"></div>
+<div class="fcConn" data-from="species2" data-to="interaction2"></div>
+<div class="fcConn" data-from="interaction2" data-to="species0"></div>
+<div class="fcConn" data-from="species1" data-to="interaction0"></div>

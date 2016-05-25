@@ -1,0 +1,3 @@
+<div class="fcComp" data-type="species" data-id="species1" data-top="135" data-left="0.19999409262759923" data-value="A" data-rev="undefined"></div>
+<div class="fcComp" data-type="species" data-id="species0" data-top="135" data-left="0.5999822778827977" data-value="B" data-rev="undefined"></div>
+<div class="fcComp" data-type="interaction" data-id="interaction2" data-top="266" data-left="0.39998818525519847" data-value="0.05" data-rev="undefined"></div>
