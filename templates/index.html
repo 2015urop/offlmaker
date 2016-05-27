@@ -74,7 +74,9 @@ February 2016
         </script>
         
     </head>
-    <body style="background-image:{{ url_for('static', filename = 'images/back/dark-grungewall.png')}}"> 
+
+    
+    <body style='background-image:"{{ url_for('static', filename = 'images/back/dark-grungewall.png')}}'> 
     
     <div class="container" id="main">
         <div class="navbar navbar-fixed-top">
@@ -87,7 +89,7 @@ February 2016
                     <span class="icon-bar"></span>
                 </button>
 
-                <a class="navbar-brand" href="/" title="OFFL"><img src="../../static/images/logo.png" alt="OFFL Logo"></a>
+                <a class="navbar-brand" href="/" title="OFFL"><img src="{{ url_for('static', filename='images/logo.png')}}"alt="OFFL Logo"></a>
 
                 <div class="nav-collapse collapse navbar-responsive-collapse">
                     <ul class="nav navbar-nav">
