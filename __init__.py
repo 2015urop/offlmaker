@@ -5,6 +5,6 @@ app.config.from_object('config')
 db = SQLAlchemy(app)
 
 # must import all view functions here
-import OFFLmaker.views
+import views
 
 db.create_all()
