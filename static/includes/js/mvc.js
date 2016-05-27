@@ -405,10 +405,12 @@ var flowchart = (function () {
 
         //Buttons for adding components
         var compLabel = $("<h3><strong>Components:</strong></h3>");
+        var speciesImageUrl = Flask.url_for("static", {"filename": "images/species.png"});
         var speciesBtn = $("<button class='buttonz btn' data-type='species' data-toggle='tooltip' title='Species'>\
-                         <img src='../static/images/species.png'></button><h4>Species</h4>");
+                         <img src=" + speciesImageUrl + "></button><h4>Species</h4>");
+        var interactionImageUrl = Flask.url_for("static", {"filename": "images/interaction.png"});
         var interactionBtn  = $("<button class='buttonz btn' data-type='interaction' data-toggle='tooltip' title='Interaction'>\
-                         <img src='../static/images/interaction.png'></button><h4>Interaction</h4>");
+                         <img src=" + interactionImageUrl + "></button><h4>Interaction</h4>");
         
         componentField.append(compLabel, speciesBtn, interactionBtn);
         

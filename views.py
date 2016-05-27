@@ -1,5 +1,6 @@
 # from __future__ import print_function
 from flask import Flask, render_template, request, jsonify
+from flask_jsglue import JSGlue
 import json
 from OFFLmaker import app, db
 from models import System, Tag
@@ -13,6 +14,7 @@ import os
 
 oString = ""
 MYDIR = os.path.dirname(__file__)
+jsglue = JSGlue(app)
 
 def convertDictToOFFL(d):
     interactionList = []
