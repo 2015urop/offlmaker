@@ -442,8 +442,13 @@ var flowchart = (function () {
             usedIds.push(nameId);
             
             //Creates the component
+            if(dataType == "interaction") {
+                componentImageUrl = interactionImageUrl;
+            } else {
+                componentImageUrl = speciesImageUrl;
+            }
             var newComponent = $("<div class='item "+dataType+"Size' data-type="+dataType+" id='"+nameId+"'>"+
-                                 "<img src='../static/images/"+dataType+".png'>"+
+                                 "<img src=" + componentImageUrl + ">"+
                                  "</div>").css({"top": top+displayArea.position().top,
                                                 "left": left*displayArea.width()+displayArea.position().left});
             
