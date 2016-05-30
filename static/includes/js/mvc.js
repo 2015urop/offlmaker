@@ -361,9 +361,10 @@ var flowchart = (function () {
         var componentField = $("<div class='componentField view narrow' style='background-color:white'></div>");
         var trash = $("<div class='trash short narrow'><i class='glyphicon glyphicon-trash'></i></div>");
         var buttonField =  $("<div class='buttonField short wide' style='background-color:white'></div>");
-        var space1 = $("<div class='short wider' style='background-image: url(../static/images/back/dark-grungewall.png);border:none;'></div>");
-        var space2 = $("<div class='short wider' style='background-image: url(../static/images/back/dark-grungewall.png);border:none;'></div>");
-        var space3 = $("<div class='short wider' style='background-image: url(../static/images/back/dark-grungewall.png);border:none;'></div>");
+        var darkGrungewallUrl = $SCRIPT_ROOT + "/../static/images/back/dark-grungewall.png";
+        var space1 = $("<div class='short wider' style='background-image:" + darkGrungewallUrl + "; border:none;'></div>");
+        var space2 = $("<div class='short wider' style='background-image:" + darkGrungewallUrl + "; border:none;'></div>");
+        var space3 = $("<div class='short wider' style='background-image:" + darkGrungewallUrl + "; border:none;'></div>");
         var inputField =  $("<div class='inputField wider' style='background-color:white;border-bottom:none;'></div>");
         var resultsField =  $("<div class='resultsField wider' style='background-color:white;border-bottom:none;'></div>");
 
