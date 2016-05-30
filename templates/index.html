@@ -75,12 +75,11 @@ February 2016
 
         <script type=text/javascript>
             $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-            console.log($SCRIPT_ROOT+"!");
         </script>
     </head>
 
 
-    <body style='background-image:"{{ url_for('static', filename = 'images/back/dark-grungewall.png')}}'> 
+    <body background="{{ url_for('static', filename = 'images/back/dark-grungewall.png')}}">
     
     <div class="container" id="main">
         <div class="navbar navbar-fixed-top">
