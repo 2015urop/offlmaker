@@ -405,10 +405,10 @@ var flowchart = (function () {
 
         //Buttons for adding components
         var compLabel = $("<h3><strong>Components:</strong></h3>");
-        var speciesImageUrl = $SCRIPT_ROOT + "../static/images/species.png";
+        var speciesImageUrl = $SCRIPT_ROOT + "/../static/images/species.png";
         var speciesBtn = $("<button class='buttonz btn' data-type='species' data-toggle='tooltip' title='Species'>\
                          <img src=" + speciesImageUrl + "></button><h4>Species</h4>");
-        var interactionImageUrl = $SCRIPT_ROOT + "../static/images/interaction.png";;
+        var interactionImageUrl = $SCRIPT_ROOT + "/../static/images/interaction.png";;
         var interactionBtn  = $("<button class='buttonz btn' data-type='interaction' data-toggle='tooltip' title='Interaction'>\
                          <img src=" + interactionImageUrl + "></button><h4>Interaction</h4>");
         
