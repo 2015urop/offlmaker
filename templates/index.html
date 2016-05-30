@@ -72,7 +72,11 @@ February 2016
                 });
             });
         </script>
-        {{ JSGlue.include() }}
+
+        <script type=text/javascript>
+            $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+            console.log($SCRIPT_ROOT+"!");
+        </script>
     </head>
 
 
