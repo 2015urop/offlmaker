@@ -1,8 +1,8 @@
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from flask.ext.sqlalchemy import SQLAlchemy
 from datetime import datetime
-from OFFLmaker import app
-from OFFLmaker import db
+from offlmaker import app
+from offlmaker import db
 
 tags = db.Table('tags',
 	db.Column('tag_id', db.Integer, db.ForeignKey('tag.tag_id')),

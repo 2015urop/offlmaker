@@ -1,7 +1,7 @@
 # from __future__ import print_function
 from flask import Flask, render_template, request, jsonify
 import json
-from OFFLmaker import app, db
+from offlmaker import app, db
 from models import System, Tag
 from OFFLmodel import OFFLmodel
 from Edge import Edge

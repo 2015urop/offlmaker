@@ -19,6 +19,71 @@ var flowchart = (function () {
             handler = UpdateHandler(),
             components = {},
             connections = [];
+
+        function areConnectionsValid(connections) {
+            for(c in connections) {
+                var connection = connections[c];
+                var sourceType = $('#'+connection.sourceId).attr('data-type');
+                var targetType = $('#'+connection.targetId).attr('data-type');
+                
+                if (sourceType === targetType){
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function showNoConnectionModal() {
+            $('.remove').remove();
+            $('.hint').append("<p class='remove'><strong>There are no connections!</strong></p>");
+            $('#warningModal').modal('show');
+        }
+
+        function showInvalidConnectionModal() {
+            $('.remove').remove();
+            $('.hint').append("<p class='remove'> Check your connections. You connected two components of the same type!</p>");
+            $('#warningModal').modal('show');
+        }
+
+        function showUnnamedSpeciesModal() {
+            $('.remove').remove();
+            $('.hint').append("<p class='remove'> Check your inputs. You forgot to name a Species!</p>");
+            $('#warningModal').modal('show');
+        }
+
+        function showNoInitialPopulationModal() {
+            $('.remove').remove();
+            $('.hint').append("<p class='remove'> Check your inputs. You forgot to give all Species an initial population!</p>");
+            $('#warningModal').modal('show');
+        }
+
+        function showDuplicateSpeciesModal() {
+            $('.remove').remove();
+            $('.hint').append("<p class='remove'> Check your inputs. All Species names must be unique. You duplicated Species names!</p>");
+            $('#warningModal').modal('show');
+        }
+
+        function showNoInteractionRateModal() {
+            $('.remove').remove();
+            $('.hint').append("<p class='remove'> Check your inputs. You forgot to give all of your Interactions rates!</p>");
+            $('#warningModal').modal('show');
+        }
+
+        function showUnweightedEdgeModal() {
+            $('.remove').remove();
+            $('.hint').append("<p class='remove'> Check your inputs. You forgot to give all of your edges weights!</p>");
+            $('#warningModal').modal('show');
+        }
+
+        function allItemsDistinct(lst) {
+            lst.sort();
+            for (var i = 0; i < lst.length - 1; i++) {
+                if (lst[i + 1] == lst[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
         
         /*
         Button for solving the system
@@ -27,253 +92,220 @@ var flowchart = (function () {
         the Python back-end.
         */
         function solve(btn) {
+            var readyForSolving = true;
 
-            var flag = true;
-            // First check and see if graph is valid, if not, return error
-            var connections = jsPlumb.getAllConnections();
-            //Checks if there are no connections
-            if (connections.length === 0){
-                flag = false;
-                $('.remove').remove();
-                $('.hint').append("<p class='remove'><strong>There are no connections!</strong></p>");
-                $('#warningModal').modal('show');
+            var connections = jsPlumb.getAllConnections()["blue rectangle"]; 
+            // no idea why but getAllConnections returns an object with field blue rectangle that contains the list of connections
+            if (connections === undefined){
+                showNoConnectionModal();
+                readyForSolving = false;
             }
-            for(c in connections) {
-                var connection = connections[c];
-                var sourceType = $('#'+connection.sourceId).attr('data-type');
-                var targetType = $('#'+connection.targetId).attr('data-type');
-                //Checks if same type of nodes are connected
-                if (sourceType === targetType){
-                    flag = false;
-                    $('.remove').remove();
-                    $('.hint').append("<p class='remove'> Check your connections. You connected two components of the same type!</p>");
-                    $('#warningModal').modal('show');
-                }
+            if (!areConnectionsValid(connections)) {
+                showInvalidConnectionModal();
+                readyForSolving = false;
             }
 
-            if(flag){
-                // Create JSON
-                var speciesValueList = [];
-                var speciesIdValueDict = {};
-                var speciesInitialList = [];
-                $(".speciesInput").each(function() {
-                    var id = $(this).attr('id');
-                    var value = $(this).val();
-                    speciesValueList.push(value.toUpperCase());
-                    speciesIdValueDict[id] = value.toUpperCase();
+            // add species to list of species names and id->name map and initial values to list of values (same order)
+            var speciesNameList = [];
+            var speciesIdNameMap = {};
+            var speciesInitialValueList = [];
+            $(".speciesInput").each(function() {
+                var id = $(this).attr('id');
+                var name = $(this).val().toUpperCase();
+                speciesNameList.push(name);
+                speciesIdNameMap[id] = name;
 
-                    var initial = $('#'+id+'Input').val();
-                    speciesInitialList.push(initial);
+                var initial = $('#'+id+'Input').val();
+                speciesInitialValueList.push(initial);
 
-                    //Checks if all species have names
-                    if (value === ""){
-                        flag = false;
-                        $('.remove').remove();
-                        $('.hint').append("<p class='remove'> Check your inputs. You forgot to name a Species!</p>");
-                        $('#warningModal').modal('show');
+                if (name === ""){
+                    readyForSolving = false;
+                    showUnnamedSpeciesModal();
+                }
+                if (initial === ""){
+                    readyForSolving = false;
+                    showNoInitialPopulationModal();
+                }
+            });
+            
+            // check if any two species share a name
+            if (!allItemsDistinct(speciesNameList)){
+                readyForSolving = false;
+                showDuplicateSpeciesModal();
+            }
+
+            // add interactions to list of ids and id->rate map
+            var interactionIdRateMap = {};
+            var interactionIdList = [];
+            $(".interactionInput").each(function() {
+                var id = $(this).attr('id');
+                var rate = $(this).val();
+
+                interactionIdList.push(id);
+                interactionIdRateMap[id] = rate;
+
+                //Checks if all interactions have rates
+                if (rate === ""){
+                    readyForSolving = false;
+                    showNoInteractionRateModal();
+                }
+            });
+
+            var edgeIdWeightMap = {};
+            $("._jsPlumb_overlay").each(function() {
+                var id = $(this).attr('id');
+                var weight = $(this).val();
+                edgeIdWeightMap[id] = weight;
+
+                //Checks if all edges have weights
+                if (weight === ""){
+                    allValuesPresent = false;
+                    showUnweightedEdgeModal();
+                }
+            });
+
+            var edgeConnValueDict = {};
+            for(id in edgeIdWeightMap){
+                var weight = edgeIdWeightMap[id];
+                edgeConnValueDict[weight] = edgeInputDict[id];
+            }
+
+            var speciesList = '"speciesList": ' + JSON.stringify(speciesNameList);
+            var initialString = '"initialValues":' + JSON.stringify(speciesInitialValueList);
+
+            var tempList = [];
+            for(i in interactionIdList){
+                var id = interactionIdList[i];
+                var temp = '{"interactionFunction":"' + interactionIdRateMap[id] + '",';
+                var sourceList = [];
+                var targetList = [];
+                var sourceValue;
+                var targetValue;
+                var sourceWeight = 1;
+                var targetWeight = 1;
+
+                for(c in connections) {
+                    var connection = connections[c];
+                    var sourceEnd = connection.sourceId;
+                    var targetEnd = connection.targetId;
+
+                    for(value in edgeConnValueDict){
+                        var conn = edgeConnValueDict[value];
+                        var connSource = conn.sourceId;
+                        var connTarget = conn.targetId;
+
+                        if(connSource === sourceEnd & connTarget === id){
+                            targetWeight = value;
+                        }
+                        if(connSource === id & connTarget === targetEnd){
+                            sourceWeight = value;
+                        }
                     }
-                    //Checks if all species have initials
-                    if (initial === ""){
-                        flag = false;
-                        $('.remove').remove();
-                        $('.hint').append("<p class='remove'> Check your inputs. You forgot to give all Species an initial population!</p>");
-                        $('#warningModal').modal('show');
+
+                    if(id === targetEnd){
+                        targetValue = speciesIdNameMap[sourceEnd];
+                        sourceList.push('{"weight":"' + targetWeight + '","species":"' + targetValue + '"}');
                     }
-                });
-                var speciesString = JSON.stringify(speciesValueList);
-                var speciesList = '"speciesList": ' + speciesString;
-                var initialString = '"initialValues":'+JSON.stringify(speciesInitialList);
-                
-                //Checks if any two species share a name
-                speciesValueList.sort();
-                var results = [];
-                for (var i = 0; i < speciesValueList.length - 1; i++) {
-                    if (speciesValueList[i + 1] == speciesValueList[i]) {
-                        results.push(speciesValueList[i]);
+                    if(id === sourceEnd){
+                        sourceValue = speciesIdNameMap[targetEnd];
+                        targetList.push('{"weight":"' + sourceWeight + '","species":"' + sourceValue + '"}');
                     }
                 }
-                if (results.length > 0){
+                
+                var sJoin = sourceList.join();
+                var tJoin = targetList.join();
+
+                //Checks if all interactions are complete
+                if (sJoin === "" | tJoin === ""){
                     flag = false;
                     $('.remove').remove();
-                    $('.hint').append("<p class='remove'> Check your inputs. All Species names must be unique. You duplicated Species names!</p>");
+                    $('.hint').append("<p class='remove'> Check your inputs. Not all of your interactions are complete!</p>");
+                    $('#warningModal').modal('show');
+                    break;
+                }
+
+                var sourceEdges = '"sourceEdges":[' + sJoin + ']';
+                var targetEdges = ',"targetEdges":[' + tJoin + ']';
+                temp += sourceEdges;
+                temp += targetEdges;
+                temp += '}';
+                tempList.push(temp);
+            };
+
+            var startTime = '"initialTime":' + $('#startTime').val();
+            var endTime = '"endTime":' + $('#endTime').val();
+            var variable = '"independentVariable":' + JSON.stringify($('#variable').val());
+                //Checks if all inputs are full
+                if (($('#startTime').val() === "") | ($('#endTime').val() === "") | ($('#variable').val() === "")){
+                    flag = false;
+                    $('.remove').remove();
+                    $('.hint').append("<p class='remove'> Check your inputs. You need to clarify an Initial Time, End Time or Variable!</p>");
                     $('#warningModal').modal('show');
                 }
-                
-
-                var interactionIdValueDict = {};
-                var interactionIDList = [];
-                $(".interactionInput").each(function() {
-                    var id = $(this).attr('id');
-                    var value = $(this).val();
-
-                    interactionIdValueDict[id] = value;
-                    interactionIDList.push(id);
-
-                    //Checks if all interactions have rates
-                    if (value === ""){
-                        flag = false;
-                        $('.remove').remove();
-                        $('.hint').append("<p class='remove'> Check your inputs. You forgot to give all of your Interactions rates!</p>");
-                        $('#warningModal').modal('show');
-                    }
-                });
-
-                var edgeIdValueDict = {};
-                $("._jsPlumb_overlay").each(function() {
-                    var id = $(this).attr('id');
-                    var value = $(this).val();
-                    edgeIdValueDict[id] = value;
-
-                    //Checks if all edges have rates
-                    if (value === ""){
-                        flag = false;
-                        $('.remove').remove();
-                        $('.hint').append("<p class='remove'> Check your inputs. You forgot to give all of your edges rates!</p>");
-                        $('#warningModal').modal('show');
-                    }
-                });
-
-                var edgeConnValueDict = {};
-                for(id in edgeIdValueDict){
-                    edgeConnValueDict[edgeIdValueDict[id]] = edgeInputDict[id];
+                //Checks if endTime is greater than startTime
+                if ((($('#startTime').val() != "") | ($('#endTime').val() != "")) & ($('#startTime').val() >= $('#endTime').val())){
+                    flag = false;
+                    $('.remove').remove();
+                    $('.hint').append("<p class='remove'> Check your time inputs. Your Start Time must be less than your End Time!</p>");
+                    $('#warningModal').modal('show');
                 }
 
-                var tempList = [];
-                for(i in interactionIDList){
-                    var ID = interactionIDList[i];
-                    var temp = '';
-                    temp += '{"interactionFunction":"' + interactionIdValueDict[ID] + '",';
-                    var sourceList = [];
-                    var targetList = [];
-                    var sourceValue;
-                    var targetValue;
-                    var sourceWeight = 1;
-                    var targetWeight = 1;
 
-                    for(c in connections) {
-                        var connection = connections[c];
-                        var sourceEnd = connection.sourceId;
-                        var targetEnd = connection.targetId;
-
-                        for(value in edgeConnValueDict){
-                            var conn = edgeConnValueDict[value];
-                            var connSource = conn.sourceId;
-                            var connTarget = conn.targetId;
-
-                            if(connSource === sourceEnd & connTarget === ID){
-                                targetWeight = value;
-                            }
-                            if(connSource === ID & connTarget === targetEnd){
-                                sourceWeight = value;
-                            }
-                        }
-
-                        if(ID === targetEnd){
-                            targetValue = speciesIdValueDict[sourceEnd];
-                            sourceList.push('{"weight":"' + targetWeight + '","species":"' + targetValue + '"}');
-                        }
-                        if(ID === sourceEnd){
-                            sourceValue = speciesIdValueDict[targetEnd];
-                            targetList.push('{"weight":"' + sourceWeight + '","species":"' + sourceValue + '"}');
-                        }
-                    }
-                    
-                    var sJoin = sourceList.join();
-                    var tJoin = targetList.join();
-
-                    //Checks if all interactions are complete
-                    if (sJoin === "" | tJoin === ""){
-                        flag = false;
-                        $('.remove').remove();
-                        $('.hint').append("<p class='remove'> Check your inputs. Not all of your interactions are complete!</p>");
-                        $('#warningModal').modal('show');
-                        break;
-                    }
-
-                    var sourceEdges = '"sourceEdges":[' + sJoin + ']';
-                    var targetEdges = ',"targetEdges":[' + tJoin + ']';
-                    temp += sourceEdges;
-                    temp += targetEdges;
-                    temp += '}';
-                    tempList.push(temp);
-                };
-
-                var startTime = '"initialTime":' + $('#startTime').val();
-                var endTime = '"endTime":' + $('#endTime').val();
-                var variable = '"independentVariable":' + JSON.stringify($('#variable').val());
-                    //Checks if all inputs are full
-                    if (($('#startTime').val() === "") | ($('#endTime').val() === "") | ($('#variable').val() === "")){
-                        flag = false;
-                        $('.remove').remove();
-                        $('.hint').append("<p class='remove'> Check your inputs. You need to clarify an Initial Time, End Time or Variable!</p>");
-                        $('#warningModal').modal('show');
-                    }
-                    //Checks if endTime is greater than startTime
-                    if ((($('#startTime').val() != "") | ($('#endTime').val() != "")) & ($('#startTime').val() >= $('#endTime').val())){
-                        flag = false;
-                        $('.remove').remove();
-                        $('.hint').append("<p class='remove'> Check your time inputs. Your Start Time must be less than your End Time!</p>");
-                        $('#warningModal').modal('show');
-                    }
+            var tempJoin = tempList.join();
+            var interactionList = '"interactionList":[' + tempJoin + ']';
+            var flowChart = '{'+ interactionList + ',' + speciesList + ',' + initialString + ',' + startTime + ',' + endTime + ','+ variable +'}';
 
 
-                var tempJoin = tempList.join();
-                var interactionList = '"interactionList":[' + tempJoin + ']';
-                var flowChart = '{'+ interactionList + ',' + speciesList + ',' + initialString + ',' + startTime + ',' + endTime + ','+ variable +'}';
-
-
-                if (flag) {
-                    // console.log(flowChart);
-                    $.ajax({
-                      type: "POST",
-                      url: '/solve',
-                      data: flowChart,
-                      contentType: 'application/json;charset=UTF-8',
-                      success: function(response){
-                        // console.log(response.series);
-                        $('#container').highcharts({
-                            credits: {
-                                enabled: false
-                            },title: {
-                                text: 'My OFFL Plot',
-                                x: -20 //center
+            if (readyForSolving) {
+                // console.log(flowChart);
+                $.ajax({
+                  type: "POST",
+                  url: '/solve',
+                  data: flowChart,
+                  contentType: 'application/json;charset=UTF-8',
+                  success: function(response){
+                    // console.log(response.series);
+                    $('#container').highcharts({
+                        credits: {
+                            enabled: false
+                        },title: {
+                            text: 'My OFFL Plot',
+                            x: -20 //center
+                        },
+                        subtitle: {
+                            text: 'modeling.mit.edu',
+                            x: -20
+                        },
+                        xAxis: {
+                            title: {
+                                text: 'Time'
                             },
-                            subtitle: {
-                                text: 'modeling.mit.edu',
-                                x: -20
+                        },
+                        yAxis: {
+                            title: {
+                                text: 'Species'
                             },
-                            xAxis: {
-                                title: {
-                                    text: 'Time'
-                                },
-                            },
-                            yAxis: {
-                                title: {
-                                    text: 'Species'
-                                },
-                                plotLines: [{
-                                    value: 0,
-                                    width: 1,
-                                    color: '#808080'
-                                }]
-                            },
-                            tooltip: {
-                                valueSuffix: ''
-                            },
-                            legend: {
-                                layout: 'vertical',
-                                align: 'right',
-                                verticalAlign: 'middle',
-                                borderWidth: 0
-                            },
-                            series: response.series
-                        });
-                        makeTitleEditable();
-                      },//end of success function
+                            plotLines: [{
+                                value: 0,
+                                width: 1,
+                                color: '#808080'
+                            }]
+                        },
+                        tooltip: {
+                            valueSuffix: ''
+                        },
+                        legend: {
+                            layout: 'vertical',
+                            align: 'right',
+                            verticalAlign: 'middle',
+                            borderWidth: 0
+                        },
+                        series: response.series
                     });
-                }
-            }
-
+                    makeTitleEditable();
+                  },//end of success function
+                }); // end of post request
+            }// end of if statement
         }
         
         /*
@@ -448,10 +480,14 @@ var flowchart = (function () {
             } else {
                 componentImageUrl = speciesImageUrl;
             }
-            var newComponent = $("<div class='item "+dataType+"Size' data-type="+dataType+" id='"+nameId+"'>"+
-                                 "<img src=" + componentImageUrl + ">"+
-                                 "</div>").css({"top": top+displayArea.position().top,
-                                                "left": left*displayArea.width()+displayArea.position().left});
+
+            var newComponent = $("<div class='item " + dataType + "Size'" + 
+                                        "data-type=" + dataType + 
+                                        " id='" + nameId + "'>" +
+                                 "<img src=" + componentImageUrl + ">" +
+                                 "</div>")
+                                .css({"top": top+displayArea.position().top,
+                                        "left": left*displayArea.width()+displayArea.position().left});
             
             var valueBox;
             //Adds input box for species components
